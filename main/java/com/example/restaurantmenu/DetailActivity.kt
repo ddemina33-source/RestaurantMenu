@@ -4,8 +4,10 @@ import android.os.Bundle
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import com.bumptech.glide.Glide
 
 class DetailActivity : AppCompatActivity() {
+
     private lateinit var tvName: TextView
     private lateinit var tvPrice: TextView
     private lateinit var tvDescription: TextView
@@ -20,16 +22,21 @@ class DetailActivity : AppCompatActivity() {
         tvDescription = findViewById(R.id.tvDishDescription)
         ivDish = findViewById(R.id.ivDishDetail)
 
-        val imageRes = intent.getIntExtra("dish_image", 0)
-        ivDish.setImageResource(imageRes)
-
-        // Получаем данные из Intent
+        // Получаем данные
         val name = intent.getStringExtra("dish_name")
-        val price = intent.getStringExtra("dish_price")
+        val price = intent.getIntExtra("dish_price", 0)
         val description = intent.getStringExtra("dish_description")
+        val imageUrl = intent.getStringExtra("dish_image_url")
 
+        // Устанавливаем текст
         tvName.text = name
-        tvPrice.text = price
+        tvPrice.text = "$price руб"
         tvDescription.text = description
+
+        // Загружаем картинку через Glide
+        Glide.with(this)
+            .load(imageUrl)
+            .placeholder(R.drawable.ic_launcher_background) // можно заменить
+            .into(ivDish)
     }
 }

@@ -11,7 +11,9 @@ import retrofit2.Callback
 import retrofit2.Response
 
 class MainActivity : AppCompatActivity() {
+
     private lateinit var listViewMenu: ListView
+    private lateinit var adapter: DishAdapter
     private val dishList = mutableListOf<Dish>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -21,100 +23,66 @@ class MainActivity : AppCompatActivity() {
         val btnCart = findViewById<Button>(R.id.btnCart)
 
         btnCart.setOnClickListener {
-            val intent = Intent(this, CartActivity::class.java)
-            startActivity(intent)
+            startActivity(Intent(this, CartActivity::class.java))
         }
 
         listViewMenu = findViewById(R.id.listViewMenu)
 
-        // Добавляем блюда
-        dishList.addAll(
-            listOf(
-                Dish(
-                    "Цезарь с курицей",
-                    450,
-                    "Курица, салат, пармезан, соус",
-                    imageResId = R.drawable.caesar
-                ),
-                Dish(
-                    "Паста Карбонара",
-                    520,
-                    "Спагетти, бекон, сливки, сыр",
-                    imageResId = R.drawable.carbonara
-                ),
-                Dish(
-                    "Пицца Маргарита",
-                    600,
-                    "Томаты, моцарелла, базилик",
-                    imageResId = R.drawable.pizza
-                ),
-                Dish(
-                    "Том-ям суп",
-                    590,
-                    "Острый суп с креветками и грибами",
-                    imageResId = R.drawable.tomyam
-                ),
-                Dish(
-                    "Чизкейк Нью-Йорк",
-                    380,
-                    "Классический чизкейк с малиновым соусом",
-                    imageResId = R.drawable.cheesecake
-                ),
-                Dish(
-                    "Американо",
-                    150,
-                    "Эспрессо с горячей водой",
-                    imageResId = R.drawable.americano
-                ),
-                Dish(
-                    "Фреш апельсин",
-                    280,
-                    "Свежевыжатый апельсиновый сок",
-                    imageResId = R.drawable.juice
-                )
-            )
-        )
-
-        val adapter = DishAdapter(this, dishList)
+        adapter = DishAdapter(this, dishList)
         listViewMenu.adapter = adapter
 
-        RetrofitClient.api.getDishes().enqueue(object : Callback<List<DishResponse>> {
-            override fun onResponse(
-                call: Call<List<DishResponse>>,
-                response: Response<List<DishResponse>>
-            ) {
-                if (response.isSuccessful) {
-                    response.body()?.let { apiDishes ->
+        loadMeals()
+
+        listViewMenu.onItemClickListener =
+            AdapterView.OnItemClickListener { _, _, position, _ ->
+
+                val selectedDish = dishList[position]
+
+                val intent = Intent(this, DetailActivity::class.java).apply {
+                    putExtra("dish_name", selectedDish.name)
+                    putExtra("dish_price", selectedDish.price)
+                    putExtra("dish_description", selectedDish.description)
+                    putExtra("dish_image_url", selectedDish.imageUrl)
+                }
+
+                startActivity(intent)
+            }
+    }
+
+    private fun loadMeals() {
+
+        RetrofitClient.api.searchMeals("")
+            .enqueue(object : Callback<MealResponse> {
+
+                override fun onResponse(
+                    call: Call<MealResponse>,
+                    response: Response<MealResponse>
+                ) {
+
+                    val meals = response.body()?.meals
+
+                    if (meals != null) {
+
                         dishList.clear()
-                        apiDishes.forEach {
+
+                        meals.forEach {
                             dishList.add(
                                 Dish(
-                                    it.name,
-                                    it.price,
-                                    it.description,
-                                    imageUrl = it.imageUrl
+                                    name = it.strMeal,
+                                    price = (200..600).random(),
+                                    description = it.strInstructions,
+                                    imageUrl = it.strMealThumb
                                 )
                             )
                         }
+
                         adapter.notifyDataSetChanged()
                     }
                 }
-            }
 
-            override fun onFailure(call: Call<List<DishResponse>>, t: Throwable) {
-                t.printStackTrace()
-            }
-        })
-
-        listViewMenu.onItemClickListener = AdapterView.OnItemClickListener { _, _, position, _ ->
-            val selectedDish = dishList[position]
-            val intent = Intent(this, DetailActivity::class.java).apply {
-                putExtra("dish_name", selectedDish.name)
-                putExtra("dish_price", selectedDish.price)
-                putExtra("dish_description", selectedDish.description)
-                putExtra("dish_image", selectedDish.imageResId)
-            }
-            startActivity(intent)
-        }
+                override fun onFailure(call: Call<MealResponse>, t: Throwable) {
+                    t.printStackTrace()
+                }
+            })
     }
 }
