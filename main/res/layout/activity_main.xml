@@ -14,6 +14,12 @@
         android:gravity="center"
         android:padding="16dp"/>
 
+    <Button
+        android:id="@+id/btnCart"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="🛒 Перейти в корзину"/>
+
     <ListView
         android:id="@+id/listViewMenu"
         android:layout_width="match_parent"

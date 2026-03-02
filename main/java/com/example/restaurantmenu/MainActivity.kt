@@ -3,6 +3,7 @@ package com.example.restaurantmenu
 import android.content.Intent
 import android.os.Bundle
 import android.widget.AdapterView
+import android.widget.Button
 import android.widget.ListView
 import androidx.appcompat.app.AppCompatActivity
 import retrofit2.Call
@@ -16,6 +17,13 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        val btnCart = findViewById<Button>(R.id.btnCart)
+
+        btnCart.setOnClickListener {
+            val intent = Intent(this, CartActivity::class.java)
+            startActivity(intent)
+        }
 
         listViewMenu = findViewById(R.id.listViewMenu)
 
